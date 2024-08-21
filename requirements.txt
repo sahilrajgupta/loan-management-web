@@ -1,0 +1,7 @@
+psycopg
+django
+django_rest_framework
+djangorestframework
+django-rest-swagger
+celery
+redis
