@@ -45,6 +45,7 @@ class LoanSerializer(serializers.ModelSerializer):
         if loan_amount > loan_limits[loan_type]:
             raise serializers.ValidationError(f'Loan amount exceeds the limit for {loan_type} loans.')
         
+        #method to calculate emi
         emi = self.calculate_emi(loan_amount, disbursement_date,interest_rate,term_period)
         monthly_income = user.annual_income / 12
         max_emi = float(monthly_income)* 0.60
@@ -54,11 +55,12 @@ class LoanSerializer(serializers.ModelSerializer):
         t_interest = (emi * term_period) - loan_amount
         if t_interest <= 10000:
             raise serializers.ValidationError('Total interest earned must be greater than Rs. 10,000.')
+        
         data['emi'] = emi
         data['user'] = user
         data['total_amount_due'] = emi*term_period
-        print(data['total_amount_due'])
         return data
+    
     #this method is to calculate emi, taking care of to add interest of days between first installment and disbursement days
     def calculate_emi(self, loan_amount, disbursement_date, interest_rate,term_period):
         try:
@@ -130,6 +132,7 @@ class LoanSerializer(serializers.ModelSerializer):
             EMI.objects.create(loan=loan_application, **emi_data)
         return loan_application
 
+#serializer for handling payments made for emis
 class PaymentSerializer(serializers.Serializer):
     loan_id = serializers.UUIDField()  
     amount = serializers.DecimalField(max_digits=15, decimal_places=2)
@@ -144,6 +147,7 @@ class PaymentSerializer(serializers.Serializer):
         c_emi = loan.emis.filter(due_date=p_date).first()
         remaining_emis = loan.emis.filter(is_paid=False)
         t_due_amount = sum([emi.amount_due for emi in remaining_emis])
+        
         if data['amount'] == 0:
             raise serializers.ValidationError("Payment amount cannnot be Zero")
         if data['amount']>=t_due_amount:

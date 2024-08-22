@@ -27,7 +27,7 @@ class LoanView(generics.CreateAPIView):
             print(request.data)
             serializer.is_valid(raise_exception=True)
             loan_application = serializer.save()
-            due_dates = EMISerializer(EMI.objects.all(), many=True).data
+            due_dates = EMISerializer(EMI.objects.filter(loan=loan_application), many=True).data
             return Response({
                 'error': None,
                 'loan_id': loan_application.loan_id,
