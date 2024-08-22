@@ -5,3 +5,4 @@ djangorestframework
 django-rest-swagger
 celery
 redis
+setuptools
